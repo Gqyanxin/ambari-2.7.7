@@ -1,0 +1,666 @@
+---
+swagger: "2.0"
+info:
+  description: "Ambari Infra Manager REST APIs has inherent support for querying,\
+    \ sorting and pagination"
+  version: "1.0.0"
+  title: "Infra Manager REST API"
+  license:
+    name: "Apache License, Version 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0"
+basePath: "/api/v1"
+tags:
+- name: "jobs"
+  description: "Job operations"
+schemes:
+- "http"
+- "https"
+paths:
+  /jobs:
+    get:
+      tags:
+      - "jobs"
+      summary: "Get all jobs"
+      description: ""
+      operationId: "getAllJobs"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "page"
+        in: "query"
+        required: false
+        type: "integer"
+        format: "int32"
+      - name: "size"
+        in: "query"
+        required: false
+        type: "integer"
+        format: "int32"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/JobInfo"
+      security:
+      - basicAuth: []
+  /jobs/executions:
+    delete:
+      tags:
+      - "jobs"
+      summary: "Stop all job executions."
+      description: ""
+      operationId: "stopAll"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "integer"
+            format: "int32"
+      security:
+      - basicAuth: []
+  /jobs/executions/{jobExecutionId}:
+    get:
+      tags:
+      - "jobs"
+      summary: "Get job and step details for job execution instance."
+      description: ""
+      operationId: "getExecutionInfo"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "jobExecutionId"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/JobExecutionDetailsResponse"
+      security:
+      - basicAuth: []
+    delete:
+      tags:
+      - "jobs"
+      summary: "Stop or abandon a running job execution."
+      description: ""
+      operationId: "stopOrAbandonJobExecution"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "jobExecutionId"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "operation"
+        in: "query"
+        description: ""
+        required: true
+        type: "string"
+        enum:
+        - "STOP"
+        - "ABANDON"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/JobExecutionInfoResponse"
+      security:
+      - basicAuth: []
+  /jobs/executions/{jobExecutionId}/context:
+    get:
+      tags:
+      - "jobs"
+      summary: "Get execution context for specific job."
+      description: ""
+      operationId: "getExecutionContextByJobExecId"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "jobExecutionId"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/ExecutionContextResponse"
+      security:
+      - basicAuth: []
+  /jobs/executions/{jobExecutionId}/steps/{stepExecutionId}:
+    get:
+      tags:
+      - "jobs"
+      summary: "Get step execution details."
+      description: ""
+      operationId: "getStepExecution"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "jobExecutionId"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "stepExecutionId"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/StepExecutionInfoResponse"
+      security:
+      - basicAuth: []
+  /jobs/executions/{jobExecutionId}/steps/{stepExecutionId}/execution-context:
+    get:
+      tags:
+      - "jobs"
+      summary: "Get the execution context of step execution."
+      description: ""
+      operationId: "getStepExecutionContext"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "jobExecutionId"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "stepExecutionId"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/StepExecutionContextResponse"
+      security:
+      - basicAuth: []
+  /jobs/executions/{jobExecutionId}/steps/{stepExecutionId}/progress:
+    get:
+      tags:
+      - "jobs"
+      summary: "Get progress of step execution."
+      description: ""
+      operationId: "getStepExecutionProgress"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "jobExecutionId"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "stepExecutionId"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/StepExecutionProgressResponse"
+      security:
+      - basicAuth: []
+  /jobs/info/names:
+    get:
+      tags:
+      - "jobs"
+      summary: "Get all job names"
+      description: ""
+      operationId: "getAllJobNames"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            uniqueItems: true
+            items:
+              type: "string"
+      security:
+      - basicAuth: []
+  /jobs/{jobName}:
+    post:
+      tags:
+      - "jobs"
+      summary: "Start a new job instance by job name."
+      description: ""
+      operationId: "startJob"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "jobName"
+        in: "path"
+        description: ""
+        required: true
+        type: "string"
+      - name: "params"
+        in: "query"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/JobExecutionInfoResponse"
+      security:
+      - basicAuth: []
+  /jobs/{jobName}/executions:
+    get:
+      tags:
+      - "jobs"
+      summary: "Get the id values of all the running job instances."
+      description: ""
+      operationId: "getExecutionIdsByJobName"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "jobName"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            uniqueItems: true
+            items:
+              type: "integer"
+              format: "int64"
+      security:
+      - basicAuth: []
+  /jobs/{jobName}/info:
+    get:
+      tags:
+      - "jobs"
+      summary: "Get job details by job name."
+      description: ""
+      operationId: "getJobDetails"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "jobName"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "page"
+        in: "query"
+        required: false
+        type: "integer"
+        format: "int32"
+      - name: "size"
+        in: "query"
+        required: false
+        type: "integer"
+        format: "int32"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/JobInstanceDetailsResponse"
+      security:
+      - basicAuth: []
+  /jobs/{jobName}/{jobInstanceId}/executions:
+    get:
+      tags:
+      - "jobs"
+      summary: "Get execution of job instance."
+      description: ""
+      operationId: "getExecutionsOfInstance"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "jobName"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "jobInstanceId"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/JobExecutionInfoResponse"
+      security:
+      - basicAuth: []
+    post:
+      tags:
+      - "jobs"
+      summary: "Restart job instance."
+      description: ""
+      operationId: "restartJobInstance"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "jobName"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "jobInstanceId"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "operation"
+        in: "query"
+        description: ""
+        required: true
+        type: "string"
+        enum:
+        - "RESTART"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/JobExecutionInfoResponse"
+      security:
+      - basicAuth: []
+securityDefinitions:
+  basicAuth:
+    type: "basic"
+definitions:
+  CumulativeHistory:
+    type: "object"
+    properties:
+      count:
+        type: "integer"
+        format: "int32"
+      min:
+        type: "number"
+        format: "double"
+      max:
+        type: "number"
+        format: "double"
+      mean:
+        type: "number"
+        format: "double"
+      standardDeviation:
+        type: "number"
+        format: "double"
+  ExecutionContextResponse:
+    type: "object"
+    properties:
+      jobExecutionId:
+        type: "integer"
+        format: "int64"
+      executionContextMap:
+        type: "object"
+        additionalProperties:
+          type: "object"
+  JobExecutionDetailsResponse:
+    type: "object"
+    properties:
+      jobExecution:
+        readOnly: true
+        $ref: "#/definitions/JobExecutionInfoResponse"
+      stepExecutionList:
+        type: "array"
+        readOnly: true
+        items:
+          $ref: "#/definitions/StepExecutionInfoResponse"
+  JobExecutionInfoResponse:
+    type: "object"
+    properties:
+      jobExecutionId:
+        type: "integer"
+        format: "int64"
+      jobInstanceId:
+        type: "integer"
+        format: "int64"
+      jobName:
+        type: "string"
+      creationTime:
+        type: "string"
+        format: "date-time"
+      startTime:
+        type: "string"
+        format: "date-time"
+      lastUpdatedTime:
+        type: "string"
+        format: "date-time"
+      endTime:
+        type: "string"
+        format: "date-time"
+      duration:
+        type: "string"
+        example: "PT5.311S"
+      jobParameters:
+        type: "object"
+        additionalProperties:
+          type: "string"
+      batchStatus:
+        type: "string"
+        enum:
+        - "COMPLETED"
+        - "STARTING"
+        - "STARTED"
+        - "STOPPING"
+        - "STOPPED"
+        - "FAILED"
+        - "ABANDONED"
+        - "UNKNOWN"
+      exitCode:
+        type: "string"
+        example: "COMPLETED"
+        enum:
+        - "UNKNOWN"
+        - "EXECUTING"
+        - "COMPLETED"
+        - "NOOP"
+        - "FAILED"
+        - "STOPPED"
+      exitDescription:
+        type: "string"
+      restartable:
+        type: "boolean"
+      abandonable:
+        type: "boolean"
+      stoppable:
+        type: "boolean"
+      failureExceptions:
+        type: "array"
+        items:
+          $ref: "#/definitions/Throwable"
+      jobConfigurationName:
+        type: "string"
+  JobInfo:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      executionCount:
+        type: "integer"
+        format: "int32"
+      launchable:
+        type: "boolean"
+      incrementable:
+        type: "boolean"
+      jobInstanceId:
+        type: "integer"
+        format: "int64"
+  JobInstanceDetailsResponse:
+    type: "object"
+    properties:
+      jobInfo:
+        $ref: "#/definitions/JobInfo"
+      jobExecutionList:
+        type: "array"
+        readOnly: true
+        items:
+          $ref: "#/definitions/JobExecutionInfoResponse"
+  MessageSourceResolvable:
+    type: "object"
+    properties:
+      defaultMessage:
+        type: "string"
+      codes:
+        type: "array"
+        items:
+          type: "string"
+      arguments:
+        type: "array"
+        items:
+          type: "object"
+  StackTraceElement:
+    type: "object"
+    properties:
+      methodName:
+        type: "string"
+      fileName:
+        type: "string"
+      lineNumber:
+        type: "integer"
+        format: "int32"
+      className:
+        type: "string"
+      nativeMethod:
+        type: "boolean"
+  StepExecutionContextResponse:
+    type: "object"
+    properties:
+      executionContextMap:
+        type: "object"
+        additionalProperties:
+          type: "object"
+      jobExecutionId:
+        type: "integer"
+        format: "int64"
+      stepExecutionId:
+        type: "integer"
+        format: "int64"
+      stepName:
+        type: "string"
+  StepExecutionHistory:
+    type: "object"
+    properties:
+      stepName:
+        type: "string"
+      count:
+        type: "integer"
+        format: "int32"
+      commitCount:
+        $ref: "#/definitions/CumulativeHistory"
+      rollbackCount:
+        $ref: "#/definitions/CumulativeHistory"
+      readCount:
+        $ref: "#/definitions/CumulativeHistory"
+      writeCount:
+        $ref: "#/definitions/CumulativeHistory"
+      filterCount:
+        $ref: "#/definitions/CumulativeHistory"
+      readSkipCount:
+        $ref: "#/definitions/CumulativeHistory"
+      writeSkipCount:
+        $ref: "#/definitions/CumulativeHistory"
+      processSkipCount:
+        $ref: "#/definitions/CumulativeHistory"
+      duration:
+        $ref: "#/definitions/CumulativeHistory"
+      durationPerRead:
+        $ref: "#/definitions/CumulativeHistory"
+  StepExecutionInfoResponse:
+    type: "object"
+    properties:
+      stepExecutionId:
+        type: "integer"
+        format: "int64"
+      jobExecutionId:
+        type: "integer"
+        format: "int64"
+      jobName:
+        type: "string"
+      stepName:
+        type: "string"
+      startTime:
+        type: "string"
+        format: "date-time"
+      endTime:
+        type: "string"
+        format: "date-time"
+      duration:
+        type: "string"
+        example: "PT5.311S"
+      batchStatus:
+        type: "string"
+        enum:
+        - "COMPLETED"
+        - "STARTING"
+        - "STARTED"
+        - "STOPPING"
+        - "STOPPED"
+        - "FAILED"
+        - "ABANDONED"
+        - "UNKNOWN"
+      exitCode:
+        type: "string"
+        example: "COMPLETED"
+        enum:
+        - "UNKNOWN"
+        - "EXECUTING"
+        - "COMPLETED"
+        - "NOOP"
+        - "FAILED"
+        - "STOPPED"
+      exitDescription:
+        type: "string"
+  StepExecutionProgress:
+    type: "object"
+    properties:
+      estimatedPercentComplete:
+        type: "number"
+        format: "double"
+      estimatedPercentCompleteMessage:
+        $ref: "#/definitions/MessageSourceResolvable"
+  StepExecutionProgressResponse:
+    type: "object"
+    properties:
+      stepExecutionProgress:
+        $ref: "#/definitions/StepExecutionProgress"
+      stepExecutionHistory:
+        $ref: "#/definitions/StepExecutionHistory"
+      stepExecution:
+        readOnly: true
+        $ref: "#/definitions/StepExecutionInfoResponse"
+  Throwable:
+    type: "object"
+    properties:
+      cause:
+        $ref: "#/definitions/Throwable"
+      stackTrace:
+        type: "array"
+        items:
+          $ref: "#/definitions/StackTraceElement"
+      message:
+        type: "string"
+      localizedMessage:
+        type: "string"
+      suppressed:
+        type: "array"
+        items:
+          $ref: "#/definitions/Throwable"
